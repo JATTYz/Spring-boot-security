@@ -2,6 +2,7 @@ package com.jaturon.security.jwt;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,15 +21,12 @@ import java.util.Date;
 public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
-    private final JwtConfig jwtConfig;
-    private final SecretKey secretKey;
 
-    public JwtUsernameAndPasswordAuthenticationFilter(AuthenticationManager authenticationManager,
-                                                      JwtConfig jwtConfig,
-                                                      SecretKey secretKey) {
+
+    public JwtUsernameAndPasswordAuthenticationFilter(AuthenticationManager authenticationManager
+                                                     ) {
         this.authenticationManager = authenticationManager;
-        this.jwtConfig = jwtConfig;
-        this.secretKey = secretKey;
+
     }
 
     @Override
@@ -58,14 +56,16 @@ public class JwtUsernameAndPasswordAuthenticationFilter extends UsernamePassword
                                             HttpServletResponse response,
                                             FilterChain chain,
                                             Authentication authResult) throws IOException, ServletException {
+        String secretKey = "securesecuresecuresecuresecuresecure";
+
         String token = Jwts.builder()
                 .setSubject(authResult.getName())
                 .claim("authorities", authResult.getAuthorities())
                 .setIssuedAt(new Date())
-                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusDays(jwtConfig.getTokenExpirationAfterDays())))
-                .signWith(secretKey)
+                .setExpiration(java.sql.Date.valueOf(LocalDate.now().plusDays(20)))
+                .signWith(Keys.hmacShaKeyFor(secretKey.getBytes()))
                 .compact();
 
-        response.addHeader(jwtConfig.getAuthorizationHeader(), jwtConfig.getTokenPrefix() + token);
+        response.addHeader("Authorization", "Bearer " + token);
     }
 }

@@ -2,7 +2,6 @@ package com.jaturon.security.security;
 
 
 import com.jaturon.security.auth.ApplicationUserService;
-import com.jaturon.security.jwt.JwtConfig;
 import com.jaturon.security.jwt.JwtTokenVerifier;
 import com.jaturon.security.jwt.JwtUsernameAndPasswordAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,18 +28,14 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PasswordEncoder passwordEncoder;
     private final ApplicationUserService applicationUserService;
-    private final SecretKey secretKey;
-    private final JwtConfig jwtConfig;
+
 
     @Autowired
     public ApplicationSecurityConfig(PasswordEncoder passwordEncoder,
-                                     ApplicationUserService applicationUserService,
-                                     SecretKey secretKey,
-                                     JwtConfig jwtConfig) {
+                                     ApplicationUserService applicationUserService
+                                     ) {
         this.passwordEncoder = passwordEncoder;
         this.applicationUserService = applicationUserService;
-        this.secretKey = secretKey;
-        this.jwtConfig = jwtConfig;
     }
 
     @Override
@@ -50,8 +45,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement()
                     .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager(), jwtConfig, secretKey))
-                .addFilterAfter(new JwtTokenVerifier(secretKey, jwtConfig),JwtUsernameAndPasswordAuthenticationFilter.class)
+                .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager()))
+                .addFilterAfter(new JwtTokenVerifier(),JwtUsernameAndPasswordAuthenticationFilter.class)
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(EMPLOYEE.name())
